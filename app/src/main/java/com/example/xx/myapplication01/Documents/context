@@ -1,0 +1,30 @@
+context字面意思是上下文
+
+Context提供了关于应用环境全局信息的接口。它是一个抽象类，它的执行被Android系统所提供。
+它允许获取以应用为特征的资源和类型。同时启动应用级的操作，如启动Activity，broadcasting
+和接收intents。
+
+android中有两种context，一种是application context，一种是activity context。
+通常我们在各种类和方法间传递的是activity context。比如一个activity的onCreate
+把activity context传递给view，意味着view拥有一个指向activity的引用，进而引用
+activity占有的资源：view hierachy, resource等。
+
+eg：
+
+protected void onCreate(Bundle state) {
+        super.onCreate(state);
+
+        TextView label = new TextView(this);
+        //传递context给view control
+
+        label.setText("Leaks are bad");
+
+        setContentView(label);
+}
+
+
+application context
+
+我们可以使用application context。application context伴随application的一生，与
+activity的生命周期无关。application context可以通过Context.getApplicationContext
+或者Activity.getApplication方法获取。

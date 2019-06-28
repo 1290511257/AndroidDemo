@@ -1,0 +1,104 @@
+安卓监听器实现的四种方式
+
+1.使用匿名内部类的方式实现监听事件
+
+使用方法：
+①首先为要实现监听的对象绑定监听器 eg：botton.setOnClickListener();
+
+②在setOnClickListener()方法中定义一个OnClickListener的匿名内部类，
+然后重写内部类中的onClick方法。
+
+③最后在onClick方法中实现监听事件要实现的逻辑。
+
+优点：
+
+①可以在当前类中复用该监听器类
+
+②可以自由访问外部类的所有界面组件
+
+code：
+
+b1.setOnClickListener(new OnClickListener(){
+    @Override
+    public void onClick(View v) {
+        Intent intet = new Intent(MainActivity.this,seekbar.class);
+        startActivity(intet);
+        //finish();
+    }
+
+});
+
+2.使用外部类的方式实现监听事件
+
+使用方法：
+
+①首先要自定义一个外部类，实现OnClickListener接口,并重写onClick方法，在onClick
+方法中可以定义这个外部类想实现的处理逻辑，那么调用这个外部类实现监听事件时，都可以用
+super来调用这个类中的处理逻辑。这也是使用外部类实现监听事件的优势所在：可以将不同监
+听事件中大量重复的处理逻辑定义在这个类中，然后使用这个外部类实现监听事件时都可以使用
+super关键字来直接调用，而不用重复定义，减少重复代码，提高代码质量。
+
+②为要实现监听的对象绑定监听器，然后在setOnClickListener()方法中使用我们自定义的
+外部类来实现监听事件。
+
+③重写onClick方法，并根据需要来决定是否需要使用super调用父类处理逻辑，并在onClick
+方法中定义自己的处理逻辑。
+
+优点：当某个事件监听器被多个GUI界面共享，且主要是完成某种业务逻辑的实现
+
+缺点：
+
+①不利于提高程序的内聚性
+
+②不能自由访问创建GUI界面类的组件，编程不够简洁
+
+这个类很简单，实现OnClickListener并复写onClick方法即可,外部类监听点击事件实际中用
+的不多，但如果以后做到好几十个按钮点下
+
+去要产生相同的动画效果，就可以把动画效果放到外部内里面
+
+code：
+
+Button buttonup=(Button)findViewById(R.id.btn_signup);
+buttonin.setOnClickListener(new MyOnClicklistener() {
+    public void onClick(View v) {
+        //noinspection ConstantConditions
+        super.onClick(v);
+        Toast.makeText(MainActivity.this,"点击了登录",Toast.LENGTH_LONG).show();
+    }
+});
+
+buttonup.setOnClickListener(new MyOnClicklistener() {
+    public void onClick(View v) {
+        //noinspection ConstantConditions
+        super.onClick(v);
+        Toast.makeText(MainActivity.this,"点击了注册",Toast.LENGTH_LONG).show();
+    }
+});
+
+class MyOnClicklistener implements View.OnClickListener {
+    public void onClick(View v) {
+        //让所有使用当前外部类的点击事件的按钮都要做出一个动作，改变button本身
+        v.setAlpha(0.5f);
+    }
+}
+
+3.使用接口方式实现监听事件
+
+可以直接在Activity中定义事件处理方法
+
+其中优点为：非常简洁
+
+缺点为：
+
+1.这种形式可能造成程序结构混乱。Activity的主要职责应该是完成界面初始化；但此时还需包含事件处理器方法，从而引起混乱
+
+2.如果activity界面类需要实现监听器接口，让人感觉比较怪异
+
+4.直接绑定到标签
+在布局中要发送事件源中定义一个：
+
+Android：onClick="clickHandler"
+
+然后在该布局对应的Activity定义一个 void clickHandler（void source）方法
+

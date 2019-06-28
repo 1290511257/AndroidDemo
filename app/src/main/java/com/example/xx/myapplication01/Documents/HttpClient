@@ -1,0 +1,103 @@
+1.HttpClient使用流程
+基本流程：
+①创建HttpClient对象：HttpClient client = new DefaultHttpClient();
+②发送Get请求的话，创建HttpGet对象；若为Post请求创建HttpPost对象
+③设置请求参数：两者都可以使用setParams(HttpParams);Post还可以用setEntity(HttpEntity)方法
+④调用httpClient对象的execute()方法发送请求，该方法会返回一个HttpResponse
+⑤对返回的HttpResponse调用getAllHeaders(),getHeaders(name)等方法可以获取服务器的响应头，调用GetEntity()方法可以取得HttpEntity对象，该对象包装了服务器的响应内容。
+
+2.HttpClient使用示例
+
+①使用HttpClient发送get请求
+
+public class MainActivity extends Activity implements OnClickListener {
+
+    private Button btnGet;
+    private WebView wView;
+    public static final int SHOW_DATA = 0X123;
+    private String detail = "";
+
+    private Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            if(msg.what == SHOW_DATA)
+            {
+                wView.loadDataWithBaseURL("",detail, "text/html","UTF-8","");
+            }
+        };
+    };
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        initView();
+        setView();
+    }
+
+    private void initView() {
+        btnGet = (Button) findViewById(R.id.btnGet);
+        wView = (WebView) findViewById(R.id.wView);
+    }
+
+    private void setView() {
+        btnGet.setOnClickListener(this);
+        wView.getSettings().setDomStorageEnabled(true);
+    }
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.btnGet) {
+            GetByHttpClient();
+        }
+    }
+    private void GetByHttpClient() {
+        new Thread()
+        {
+            public void run()
+            {
+                    try {
+                        HttpClient httpClient = new DefaultHttpClient();
+                        HttpGet httpGet = new HttpGet("http://www.w3cschool.cc/python/python-tutorial.html");
+                        HttpResponse httpResponse = httpClient.execute(httpGet);
+                        if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                            HttpEntity entity = httpResponse.getEntity();
+                            detail = EntityUtils.toString(entity, "utf-8");
+                            handler.sendEmptyMessage(SHOW_DATA);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+            };
+        }.start();
+    }
+
+}
+
+②使用HttpClient发送Post请求
+
+private void PostByHttpClient(final String url)
+{
+    new Thread()
+    {
+        public void run()
+        {
+            try{
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(url);
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("user", "猪大哥"));
+                params.add(new BasicNameValuePair("pawd", "123"));
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params,"UTF-8");
+                httpPost.setEntity(entity);
+                HttpResponse httpResponse =  httpClient.execute(httpPost);
+                if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                    HttpEntity entity2 = httpResponse.getEntity();
+                    detail = EntityUtils.toString(entity2, "utf-8");
+                    handler.sendEmptyMessage(SHOW_DATA);
+                }
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        };
+    }.start();
+}
+

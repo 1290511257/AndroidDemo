@@ -1,0 +1,35 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+当 android:orientation="vertical"  时， 只有水平方向的设置才起作用，垂直方向的设置不起作用。即：left，right，center_horizontal 是生效的。
+当 android:orientation="horizontal" 时， 只有垂直方向的设置才起作用，水平方向的设置不起作用。即：top，bottom，center_vertical 是生效的。
+
+android:layout_width：设置控件宽度
+android:layout_height：设置控件高度
+android:background：设置控件背景色
+android:visibility：设置控件是否可见（visibility可见、invisibility不可见、gone隐藏。invisibility与gone的区别就是，invisibility会保留控件所占空间，而gone则不会保留控件所占控件，就我开发至今，还是gone使用的多一些）
+android:gravity：设置控件内部的控件或者文本的位置（ImageView无法使用这个属性）
+android:layout_gravity：设置控件相对于父控件的位置（LinearLayout会存在受限，参见附录3）
+android:src：设置ImageView图片资源
+android:tint：设置ImageView图片纯色（可以任意设定，比如我的就是蓝色的图，但是设置白色后显示的就是白色的图片）
+android:text：设置文本
+android:textColor：设置文本颜色
+android:textSize：设置文本字体大小
+android:id：设置控件的id，类比身份证号，能找到唯一 指定的控件，对其进行操作，可以在xml相对布局中使用，也可在代码中使用其找到对应控件，用于操作
+android:layout_toLeftOf：在RelativeLayout布局内的直接子控件可以使用的属性，紧邻某控件的左侧，参数是id
+android:orientation：LinearLayout的属性，当LinearLayout中的控件超过一个的时候，必须要设置，有两个参数horizontal（横向布局）和vertical（纵向布局）
+layout_weight：权重，在RelativeLayout布局内的直接子控件可以使用的属性，当android:orientation="horizontal"时，使用权重的控件android:layout_width属性必须设置为0dip（也就是0dp），反之当android:orientation="vertical"时，android:layout_height属性必须设置为0dip

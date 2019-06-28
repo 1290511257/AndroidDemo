@@ -1,0 +1,54 @@
+launchMode（启动模式）
+
+不同的Activity有不同的目的。有些被设计成每发送一个intent都单独一个Activity工作，比如邮件
+客户端中撰写邮件的Activity，而有些则被设计成单例的，比如邮件收件箱的Activity。
+
+1.设置一个launchMode
+
+可以直接在AndroidManifest.xml<activity>标签的launchMode属性中设置
+
+launchMode有四种类型。
+
+①standard
+
+默认模式，这种模式下，当Intent发送的时候，Activity总是被创建一个新的出来单独工作。
+如果有发送10个撰写邮件的Intent，那么将有10个不同的Activity启动。
+
+②singleTop
+
+一个singleTop Activity 的实例可以无限多，如果在栈顶已经有一个相同类型的Activity实例，
+Intent不会再创建一个Activity，而是通过onNewIntent()被发送到现有的Activity。
+
+在singleTop模式下我们需要同时在onCreate() 和 onNewIntent()中处理发来的intent，以满足不同情况。
+
+这种启动模式的用例之一就是搜索功能。假设我们创建了一个搜索框，点击搜索的时候将导航到一个显示
+搜索结果列表的SearchActivity中，为了更好的用户体验，这个搜索框一般也会被放到SearchActivity
+中，这样用户想要再次搜索就不需要按返回键。
+如果每次显示搜索结果的时候我们都启动一个新的activity，10次搜索10个activity，那样当我们
+想返回最初的那个activity的时候需要按10次返回。所以我们应该这样，如果栈顶已经有一个
+SearchActivity，我们将Intent发送给现有的activity，让它来更新搜索结果。这样就只会有一
+个在栈顶的SearchActivity，只需点一次back就可以回到之前的activity。
+不管怎样，singleTop和它的调用者处在一个任务中。如果你想要让intent发送给另一个任务中处于
+栈顶的Activity，是不行的。而当Intent来自于另外一个应用的时候，新的Activity的启动方式和
+standard模式是一致的（pre-Lollipop:处于调用者任务的栈顶，Lollipop:会创建一个新的任务）。
+
+③singleTask
+
+singleTask模式的Activity只允许在系统中有一个实例。如果系统中已经有了一个实例，持有这个
+实例的任务将移动到顶部，同时intent将被通过onNewIntent()发送。如果没有，则会创建一个新
+的Activity并置放在合适的任务中。
+
+⑤singleInstance
+
+这个模式非常接近于singleTask，系统中只允许一个Activity的实例存在。区别在于持有这个Activity
+的任务中只能有一个Activity：即这个单例本身。
+
+
+2.除了在manifest中设置启动模式，我们也可以使用Intent Flags设置
+
+Intent intent = new Intent(StandardActivity.this, StandardActivity.class);
+intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+startActivity(intent);
+
+
+

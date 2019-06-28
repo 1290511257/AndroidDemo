@@ -1,0 +1,103 @@
+有两种方式可以进行电话状态的监听，一种是使用Broadcast Receiver，
+一种使用TelephonyManager设置监听器
+
+开启应用获取电话状态权限
+
+<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+1.使用Service组件和TelephoneyManager实现电话监听
+
+注：电话接听一段时间后Service会自动关闭。应该是被系统关闭的
+
+①新建一个类继承PhoneStateListener类，并重写onCallStateChanged方法
+
+eg：
+
+public void onCallStateChanged(int state, String incomingNumber) {
+        super.onCallStateChanged(state, incomingNumber);
+
+        try {
+
+            switch (state){
+
+                case TelephonyManager.CALL_STATE_IDLE: //无任何状态时
+                     Log.i("=================","CALL_STATE_IDLE");
+                     break;
+                case TelephonyManager.CALL_STATE_OFFHOOK: //接通
+                     Log.i("=================","CALL_STATE_OFFHOOK");
+                     break;
+                case TelephonyManager.CALL_STATE_RINGING://响铃
+                     //响铃时的具体操作
+                     Log.i("=================","CALL_STATE_RINGING");
+                     break;
+            }
+
+        }catch (Exception e){
+            //Log.i("Err", e.toString());
+        }
+
+}
+
+②新建服务类继承Service，并重写其中的onCreate，onStartCommand，onDestroy等方法
+
+不要忘了在manifest中配置Service，xml中配置action无效时可以使用动态注入（在Intent中配置）
+
+eg：
+
+public class PhoneListenerService extends Service {
+
+    private static String TAG = "==============";
+    private TelephonyManager telephonyManager;
+    private TelListener telListener;
+
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.i(TAG,"onbind");
+        return null;
+    }
+
+    //Service被创建时调用
+    @Override
+    public void onCreate() {
+        Log.i(TAG, "电话监听Service创建!");
+        super.onCreate();
+    }
+
+    //Service被启动时调用
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        Log.i(TAG, "电话监听Service启动!");
+
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
+        telListener = new TelListener();
+
+        telephonyManager.listen(telListener, PhoneStateListener.LISTEN_CALL_STATE);
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    //Service被关闭之前回调
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "电话监听Service关闭!");
+        if(telephonyManager != null && telListener != null){
+            //取消电话监听状态
+            telephonyManager.listen(telListener, PhoneStateListener.LISTEN_NONE);
+        }
+        super.onDestroy();
+    }
+
+}
+
+③启动Service服务
+
+Intent listenerIntent = new Intent(MainActivity.this, PhoneListenerService.class);
+
+startService(listenerIntent);
+
+
+
+

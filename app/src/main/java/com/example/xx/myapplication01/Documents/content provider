@@ -1,0 +1,13 @@
+（1）android平台提供了ContentProvider使一个应用程序的指定数据集提供给其他应用程序。其他应用可以通过
+ContentResolver类从该内容提供者中获取或存入数据。
+
+（2）只有需要在多个应用程序间共享数据是才需要内容提供者。例如，通讯录数据被多个应用程序使用，且必须存储
+在一个内容提供者中。它的好处是统一数据访问方式。
+
+（3）ContentProvider实现数据共享。ContentProvider用于保存和获取数据，并使其对所有应用程序可见。这
+是不同应用程序间共享数据的唯一方式，因为android没有提供所有应用共同访问的公共存储区。
+
+（4）开发人员不会直接使用ContentProvider类的对象，大多数是通过ContentResolver对象实现对ContentProvider的操作。
+
+（5）ContentProvider使用URI来唯一标识其数据集，这里的URI以content://作为前缀，表示该数据由
+ContentProvider来管理。

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">My Application01</string>
+    <string name="nametitle">请输入文件名</string>
+    <string name="detailtitle">请输入文本内容</string>
+    <string name="btnwrite">写入</string>
+    <string name="btnclean">清空</string>
+    <string name="btnread">读取文本内容</string>
+    <string name="btnstart">开始服务</string>
+    <string name="btnstop">停止服务</string>
+    <string name="callphone">拨打10086</string>
+</resources>

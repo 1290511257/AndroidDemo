@@ -1,0 +1,31 @@
+安卓中常用的集中数据存储方式
+
+①SharedPreferences存储数据
+②SQLite数据库存储数据
+③文件存储数据
+④使用ContentProvider存储数据
+⑤网络存储数据
+
+SharedPreferences也叫偏爱存储，通常用来存储一些喜好数据
+
+1、SharedPreferences是一种轻型的数据存储方式，实际上是基于XML文件存储的“key-value”键值对数据。
+2、通常用来存储程序的一些配置信息。其存储在“data/data/程序包名/shared_prefs目录下。
+3、SharedPreferences本身只能获取数据，不支持存储和修改。存储和修改要通过Editor对象来实现。
+
+使用方式：
+①创建实例：
+SharedPreferences preferences= context.getSharedPreferences("SharedPreferences",MODE_PRIVATE);
+
+有关context的疑问请移步context
+
+注：MODE_PRIVATE，则该配置文件只能被自己的应用程序访问。
+   MODE_WORLD_READABLE，则该配置文件除了自己访问外还可以被其它应该程序读取。
+   MODE_WORLD_WRITEABLE，则该配置文件除了自己访问外还可以被其它应该程序读取和写入。
+
+至于其中的context是谁，请参照我前面的写的博客，如果你真是懒得去翻的话，那就用getApplicationContext()吧。不过这都不重要，
+无论是context还是getApplicationContext()，一会在封装的部分，我们统统都用不到。
+
+②创建编辑器
+
+SharedPreferences.Editor edit= preferences.edit();
+edit.putString("putString", "string").apply();插入对应数据。
