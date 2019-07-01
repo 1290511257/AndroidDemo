@@ -1,0 +1,60 @@
+Widget(小部件)
+
+1.Widget页面布局
+
+见layout_widget.xml文件
+
+①Widget中支持的控件
+
+A RemoteViews object (and, consequently, an App Widget) can support the following layout classes:
+FrameLayout
+LinearLayout
+RelativeLayout
+GridLayout
+And the following widget classes:
+AnalogClock
+Button
+Chronometer
+ImageButton
+ImageView
+ProgressBar
+TextView
+ViewFlipper
+ListView
+GridView
+StackView
+AdapterViewFlipper
+Descendants of these classes are not supported.
+
+2.小部件配置信息
+
+见widget_provider.xml
+
+配置信息主要是设定小部件的一些属性，比如宽高、缩放模式、更新时间间隔等。
+
+minHeight、minWidth 定义Widget的最小高度和最小宽度（Widget可以通过拉伸来调整尺寸大小）。
+
+previewImage 定义添加小部件时显示的图标。
+
+initialLayout 定义了小部件使用的布局。
+
+updatePeriodMillis定义小部件自动更新的周期，单位为毫秒。
+
+resizeMode 指定了 widget 的调整尺寸的规则。可取的值有: “horizontal”, “vertical”,
+“none”。”horizontal”意味着widget可以水平拉伸，“vertical”意味着widget可以竖值拉伸，
+“none”意味着widget不能拉伸；默认值是”none”。
+
+widgetCategory 指定了 widget 能显示的地方：能否显示在 home Screen 或 lock screen
+或两者都可以。它的取值包括：”home_screen” 和 “keyguard”。Android 4.2 引入。
+
+最后，需要我们在AndroidManifest中注册AppWidgetProvider时引用该文件，使用如下:
+
+<receiver android:name=".widget.ListWidgetProvider">
+     ...
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/widget_provider" />
+</receiver>
+
+
+

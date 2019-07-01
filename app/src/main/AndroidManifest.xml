@@ -4,7 +4,9 @@
 
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
 
     <application
         android:allowBackup="true"
@@ -13,32 +15,41 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+
+        <!-- 配置Activity组件 -->
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".ServiceActivity">
+        <activity android:name=".activity.ServiceActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <!-- 配置Service组件,同时配置一个action -->
-        <service android:name=".TestService">
+        <service android:name=".service.TestService">
             <intent-filter>
                 <action android:name="com.example.xx.myapplication01.TestService"/>
             </intent-filter>
         </service>
 
-        <service android:name=".PhoneListenerService">
+        <service android:name=".service.PhoneListenerService">
             <intent-filter>
                 <action android:name="android.intent.action.RESPOND_VIA_MESSAGE"/>
             </intent-filter>
         </service>
 
+        <!-- 配置Receiver组件 -->
+        <receiver android:name=".widget.ListWidgetProvider">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@layout/widget_provider" />
+        </receiver>
     </application>
 
 </manifest>

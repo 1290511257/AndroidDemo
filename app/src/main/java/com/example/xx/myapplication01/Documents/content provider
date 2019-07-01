@@ -1,3 +1,7 @@
+contentProvider(内容提供者)
+当我们想允许自己的应用数据可以被别的应用进行读取操作，我们可以让我们app实现ContentProvider类
+同时注册一个uri，然后其他应用使用ContentResolve根据Uri就可以操作我们app中的数据。
+
 （1）android平台提供了ContentProvider使一个应用程序的指定数据集提供给其他应用程序。其他应用可以通过
 ContentResolver类从该内容提供者中获取或存入数据。
 
@@ -11,3 +15,40 @@ ContentResolver类从该内容提供者中获取或存入数据。
 
 （5）ContentProvider使用URI来唯一标识其数据集，这里的URI以content://作为前缀，表示该数据由
 ContentProvider来管理。
+
+URI：通用资源标识符，类比网页域名。写法如content://com.jay.example.providers.myprovider/word/2
+
+分析：
+
+content:协议头，类似于HTTP，ftp
+
+//后跟的是provider所在的全限定类名
+
+word代表资源部分
+
+2为具体资源，想访问所有写到word级即可
+
+
+1.使用系统提供的ContentProvider
+
+我们可以通过系统提供的ContentProvider来读取系统APP，联系人，信息，多媒体等信息。
+
+eg:读取短信内容
+
+Uri uri = Uri.parse("content://sms/");
+ContentResolver resolver = getContentResolver();
+//获取的是哪些列的信息
+Cursor cursor = resolver.query(uri, new String[]{"address","date","type","body"}, null, null, null);
+while(cursor.moveToNext())
+{
+    String address = cursor.getString(0);
+    String date = cursor.getString(1);
+    String type = cursor.getString(2);
+    String body = cursor.getString(3);
+    System.out.println("地址:" + address);
+    System.out.println("时间:" + date);
+    System.out.println("类型:" + type);
+    System.out.println("内容:" + body);
+    System.out.println("======================");
+}
+cursor.close();
