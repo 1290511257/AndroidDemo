@@ -1,0 +1,109 @@
+AppWidgetManager主要是对AppWidget进行管理，掌控AppWidget的更新信息等。
+
+AppWidgetManager中提供了以下action字段来发起activity
+
+    /** 当你想要选择一个AppWidget去显示时使用该action去发起一个activity。The AppWidget picker activity will be launched.
+     *
+     * 你必须提供以下的extras：
+     * 1.EXTRA_APPWIDGET_ID：一个新分配的appWidgetId,每一个appWidget有一个唯一的id与之对应，该id将会关联到你稍后选择的AppWidget
+     *
+     * 当你选择好后，系统会通过onActivityResult来通知刚刚选择的AppWidget信息，信息包含在intent
+     * intent的extras信息有：
+     * 1.EXTRA_APPWIDGET_ID：刚刚被创建的AppWidget的id，如果不出错，和你传进来的id是一样的
+     *
+     * 当你收到来自AppWidget pick activity的result后，
+     * 1.如果resultCode是android.app.Activity#RESULT_OK，说明appWidget已经被选中和创建，你可以通过id来获取AppWidgetProviderInfo。
+     * AppWidgetProviderInfo包含该AppWidget的所有信息。
+     * 如果该appWidget有configuration Activity的话，launch它。使用ACTION_APPWIDGET_CONFIGURE，稍后会提到
+     * 2.如果resultCode是android.app.Activity#RESULT_CANCELED，你需要删掉刚刚的id。
+     * AppWidgetHost.deleteAppWidgetId(appWidgetId);
+     */
+    public static final String ACTION_APPWIDGET_PICK = "android.appwidget.action.APPWIDGET_PICK";
+
+    /**
+     * 类似ACTION_APPWIDGET_PICK，but used from keyguard
+     */
+    public static final String ACTION_KEYGUARD_APPWIDGET_PICK = "android.appwidget.action.KEYGUARD_APPWIDGET_PICK";
+
+    /**
+     * Activity action to launch from your {@link AppWidgetHost} activity when you want to bind
+     * an AppWidget to display and bindAppWidgetIdIfAllowed returns false.
+     * 当你想要绑定一个AppWidget去显示，使用该action去launch一个Activity。bindAppWidgetIdIfAllowed返回false。
+     * 你必须提供以下的extras：
+     * 1.EXTRA_APPWIDGET_ID：一个新分配的appWidgetId,该id将会关联到你提供的AppWidget Provider。
+     * 2.EXTRA_APPWIDGET_PROVIDER：The BroadcastReceiver that will be the AppWidget provider for this AppWidget.
+     * 3.EXTRA_APPWIDGET_PROVIDER_PROFILE：An optional handle to a user profile under which runs the provider for this AppWidget.
+     *
+     * 当你选择好后，系统会通过onActivityResult来通知刚刚选择的AppWidget信息，信息包含在intent
+     * intent的extras信息有：
+     * 1.EXTRA_APPWIDGET_ID：刚刚被创建的AppWidget的id，如果不出错，和你传进来的id是一样的
+     *
+     * 当你收到来自AppWidget bind activity的result后，
+     * 1.如果resultCode是android.app.Activity#RESULT_OK，说明appWidget已经被关联，你可以通过id来获取AppWidgetProviderInfo。
+     * AppWidgetProviderInfo包含该AppWidget的所有信息。
+     * 如果该appWidget有configuration Activity的话，launch它。使用ACTION_APPWIDGET_CONFIGURE，稍后会提到
+     * 2.如果resultCode是android.app.Activity#RESULT_CANCELED，你需要删掉刚刚的id。
+     * AppWidgetHost.deleteAppWidgetId(appWidgetId);
+     */
+    public static final String ACTION_APPWIDGET_BIND = "android.appwidget.action.APPWIDGET_BIND";
+
+    /**
+     * 当一个AppWidget已经被加到host中，并且你想要启动它的configuration Activity的时候，使用该action。
+     * 该action并不是以广播的形式发送给AppWidget Provider，而是作为一个startActivity。
+     *
+     * 该intent应该包含以下extras
+     * 1.EXTRA_APPWIDGET_ID：要配置的AppWidget的id
+     *
+     * 如果你返回android.app.Activity#RESULT_OK（使用Activity.setResult()），AppWidget将会被加入，并且
+     * 你会受到ACTION_APPWIDGET_UPDATE的广播
+     * 如果你返回android.app.Activity#RESULT_CANCELED，host不会把AppWidget加进去，也不会显示，并且你
+     * 会收到ACTION_APPWIDGET_DELETED的广播消息
+     */
+    public static final String ACTION_APPWIDGET_CONFIGURE = "android.appwidget.action.APPWIDGET_CONFIGURE";
+
+AppWidgetManager还可以发广播通知指定的AppWidget来更新，消息有
+
+    /**
+     * 当你想要更新AppWidget时发送该广播
+     * <p>This may be sent in response to a new instance for this AppWidget provider having
+     * been instantiated, the requested {@link AppWidgetProviderInfo#updatePeriodMillis update interval}
+     * having lapsed, or the system booting.
+     *
+     * The intent will contain the following extras:
+     * 1.EXTRA_APPWIDGET_IDS：需要被更新的AppWidget们的id
+     *
+     * 该广播发送出去后，将会触发AppWidgetProvider.onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+     */
+    public static final String ACTION_APPWIDGET_UPDATE = "android.appwidget.action.APPWIDGET_UPDATE";
+
+
+系统发出的广播。
+
+    /**
+     * Sent when the custom extras for an AppWidget change.
+     * 触发该函数AppWidgetProvider.onAppWidgetOptionsChanged(Context context,
+     *      AppWidgetManager appWidgetManager, int appWidgetId, Bundle newExtras)
+     */
+    public static final String ACTION_APPWIDGET_OPTIONS_CHANGED = "android.appwidget.action.APPWIDGET_UPDATE_OPTIONS";
+
+    /**
+     * 当一个AppWidget实例被删除时，发送该广播
+     * 触发该函数AppWidgetProvider.onDeleted(Context context, int[] appWidgetIds)
+     */
+    public static final String ACTION_APPWIDGET_DELETED = "android.appwidget.action.APPWIDGET_DELETED";
+
+    /**
+     * 当最后一个AppWidget被删除时，发送该广播
+     * 触发该函数AppWidgetProvider.onDisabled(Context context)
+     */
+    public static final String ACTION_APPWIDGET_DISABLED = "android.appwidget.action.APPWIDGET_DISABLED";
+
+    /**
+     * 当某种AppWidget第一次被创建实例并被加到host中，发送该广播
+     * 触发AppWidgetProvider.onEnabled(Context context)
+     */
+    public static final String ACTION_APPWIDGET_ENABLED = "android.appwidget.action.APPWIDGET_ENABLED";
+
+
+
+

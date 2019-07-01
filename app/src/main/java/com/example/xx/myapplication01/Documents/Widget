@@ -1,10 +1,6 @@
 Widget(小部件)
 
-1.Widget页面布局
-
-见layout_widget.xml文件
-
-①Widget中支持的控件
+Widget中支持的控件
 
 A RemoteViews object (and, consequently, an App Widget) can support the following layout classes:
 FrameLayout
@@ -26,7 +22,7 @@ StackView
 AdapterViewFlipper
 Descendants of these classes are not supported.
 
-2.小部件配置信息
+小部件配置信息
 
 见widget_provider.xml
 
@@ -55,6 +51,461 @@ widgetCategory 指定了 widget 能显示的地方：能否显示在 home Screen
         android:name="android.appwidget.provider"
         android:resource="@xml/widget_provider" />
 </receiver>
+
+1 Android widget
+      Android widget 也称为桌面插件，其是android系统应用开发层面的一部分，但是又有特殊用途，而且会成为整个android系统的亮点。Android中的AppWidget与google widget和中移动的widget并不是一个概念，这里的AppWidget只是把一个进程的控件嵌入到别外一个进程的窗口里的一种方法。
+2 AppWidget Framework
+2.1 定义
+      Android系统增加了AppWidget 框架，用以支持widget类型应用的开发。AppWidget 框架主要由两个部件来组成：
+（1）AppWidgetService是框架的的核心类，是系统 service之一，它负责widgets的管理工作。加载，删除，定时事件等都需要AppWidgetService的处理。开机自启动的。
+       AppWidgetService存在的目的主要是解开AppWidgetProvider和AppWidgetHost之间的耦合。如果 AppWidgetProvider和AppWidgetHost的关系固定死了，AppWidget就无法在任意进程里显示了。而有了 AppWidgetService，AppWidgetProvider根本不需要知道自己的AppWidget在哪里显示了。
+（2）AppWidgetManager 负责widget视图的实际更新以及相关管理。
+
+2.2 AppWidget Framework的大致流程
+1. 编写一个widget（先不考虑后台服务以及用户管理界面等）
+    实际是写一个事件监听类即一个BroadcastReceiver子类，当然框架已经提供了一个辅助类AppWidgetProvider，实现的类只要实现其方法即可，其中必须实现的方法是onUpdate ，其实就是一个定时事件，widget监听此事件
+    另外就是规划好视图（layout），将此widget打包安装。
+2. 当android系统启动时，AppWidgetService 就将负责检查所有的安装包，将检查
+    AndroidManifest.xml（不要告诉我不知道，如果不知道可要看看基本开发知识了）
+    文件中有<metadata android:name="android.appwidget.provider" android:resource="@xml/appwidget_info" />
+    信息的程序包记录下来
+3. 从用户菜单将已经安装的widget添加到桌面，也就是将widget在桌面上显示出来，这个应该是由AppWidgetService和AppWidgetManager完成的，其中AppWidgetManager 将负责将视图发送到桌面显示出来，并将此widget记录到系统文件中
+4. AppWidgetService将根据widget配置中的updatePeriodMillis属性来定时发送ACTION_APPWIDGET_UPDATE事件，此事件将激活widget的事件监听方法onUpdate，此方法将通过AppWidgetManager完成widget内容的更新和其他操作。
+3 AppWidgetHost
+      AppWidgetHost 是实际控制widget的地方，大家注意，widget不是一个单独的用户界面程序，他必须寄生在某个程序（activity）中，这样如果程序要支持widget寄生就要实现AppWidgetHost，桌面程序（Launcher）就实现了这个接口。
+      它的主要功能有两个：
+o 监听来自AppWidgetService的事件。
+o 另外一个功能就是创建AppWidgetHostView。
+       前面我们说过RemoteViews不是真正的View，只是View的描述，而 AppWidgetHostView才是真正的View。这里先创建AppWidgetHostView，然后通过AppWidgetService查询 appWidgetId对应的RemoteViews，最后把RemoteViews传递给AppWidgetHostView去updateAppWidget。
+Host的实现者
+
+      AppWidgetHost和AppWidgetHostView是在框架中定义的两个基类。应用程序可以利用这两个类来实现自己的Host。Launcher是缺省的桌面，它是一个Host的实现者。
+      LauncherAppWidgetHostView扩展了AppWidgetHostView，实现了对长按事件的处理。
+      LauncherAppWidgetHost扩展了AppWidgetHost，这里只是重载了onCreateView，创建LauncherAppWidgetHostView的实例。
+4 AppWidgetHostView
+      AppWidgetHostView是真正的View，但它只是一个容器，用来容纳实际的AppWidget的View。这个AppWidget的View是根据RemoteViews的描述来创建。
+
+5 AppWidgetProvider
+        AppWidgetProvider是AppWidget提供者需要实现的接口，它实际上是一个BroadcastReceiver。只不过子类要实现的不再是onReceive，而是转换成了几个新的函数：
+
+1 public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+2 public void onDeleted(Context context, int[] appWidgetIds)
+3 public void onEnabled(Context context)
+4 public void onDisabled(Context context)
+这几个函数用来响应AppWidgetService发出的相应的广播消息。
+
+AppWidgetProvider的实现者
+
+       作为AppWidgetProvider的实现者，一定要实现onUpdate函数，因为这个函数决定widget的显示方式，如果没有这个函数widget根本没办法出现。
+1 void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+
+onUpdate的实现基本上遵循下面的流程：
+o 创建RemoteViews
+o 调用AppWidgetManager的updateAppWidget去更新widget.
+6 RemoteViews
+       RemoteViews并不是一个真正的View，它没有实现View的接口，而只是一个用于描述View的实体。比如：创建View需要的资源ID和各个控件的事件响应方法。RemoteViews会通过进程间通信机制传递给AppWidgetHost。
+       现在我们可以看出，Android中的AppWidget与google widget和中移动的widget并不是一个概念，这里的AppWidget只是把一个进程的控件嵌入到别外一个进程的窗口里的一种方法。View在另 外一个进程里显示，但事件的处理方法还是在原来的进程里。这有点像 X Window中的嵌入式窗口。
+
+
+
+组成部分
+1 AppWidgetProviderInfo
+       描述一个App Widget，如App Widget的布局，更新频率，以及AppWidgetProvider类的metadata。这在XML中定义。
+   一个App Widget的基本属性是通过AppWidgetProviderInfo去定义的，例如它的最小尺寸的布局，它的初始layout，多久更新App Widget，还有（可选）在创建时期的一个配置Activity。在XML资源中定义一个AppWidgetProviderInfo是通过<appwidget-provider>标签，并保存在工程的res/xml/文件夹底下。ApiDemo中的例子 appwidget_provider.xml文件：
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2006 The Android Open Source Project
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+android:minWidth="60dp"
+android:minHeight="30dp"
+android:updatePeriodMillis="86400000"
+android:initialLayout="@layout/appwidget_provider"
+android:configure="com.example.android.apis.appwidget.ExampleAppWidgetConfigure"
+>
+</appwidget-provider>
+<!-- 86400000 is the value of AlarmManager.INTERVAL_DAY - or once per day. -->
+
+       configure 属性是当用户添加一个App Widget前启动的Activity，这个Activity的作用就是配置App Widget的属性。(Optional)
+       updatePeriodMillis 属性定义了App Widget应该多久向AppWidgetProvider请求更新。实际更新的时间未必能保证及时更新，并且建议尽量不要频繁更新---比如一小时一次去更新电量。也可以容许用户去自定义更新的时间。
+
+重大消息！！！SDK1.5之后此方法android:updatePeriodMillis就失效了，要自己创建service更新。
+2 AppWidgetProvider
+    AppWidgetProvider是BroadcastReceiver的子类，这个类处理App Widget广播。AppWidgetProvider只接收于App Widget有关系的广播，比如App Widget在updated, deleted, enabled, and disabled。当这些广播发生的时候，AppWidgetProvider会调用一下回调方法：
+
+
+onUpdate(Context, AppWidgetManager, int[])
+
+    间隔调用此方法去更新App Widget，间隔时间的设置是在AppWidgetProviderInfo下的updatePeriodMillis属性，同样当用户添加App Widget的时候也被调用。如果你已经声明了一个configuration Activity，用户添加App Widget的时候就不会调用onUpdate，但是在随后的更新中依然会被调用。
+
+onDeleted(Context, int[])
+
+    当App Widget 从App Widget host 中删除的时候调用。
+
+onEnabled(Context)
+
+    当App Widget第一次创建的时候调用。比如，当用户增加两个同样的App Widget时候，这个方法只在第一次去调用。如果你需要打开一个新的数据库或者其他的设置，而这在所有的App Widgets只需要设置一次的情况下，这个是最好的地方去实现它们。
+
+onDisabled(Context)
+
+    当App Widget的最后一个实例从App Widget host中被删除的时候调用。这里可以做一些在onEnabled(Context)中相反的操作，比如删除临时数据库。
+
+onReceive(Context, Intent)
+
+    每一个广播的产生都会调用此方法，而且是在上面方法之前被调用。通常不需要实现此方法。
+
+    在AppWidgetProvider中最重要的callback就是onUpdated()，如果你的App Widget接收用户交互事件，就需要在这个callback里面进行处理。
+
+    ApiDemo中的例子，ExampleAppWidgetProvider.Java文件
+
+/*
+* Copyright (C) 2008 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+package com.example.android.apis.appwidget;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.SystemClock;
+import android.util.Log;
+import android.widget.RemoteViews;
+// Need the following import to get access to the app resources, since this
+// class is in a sub-package.
+import com.example.android.apis.R;
+/**
+* A widget provider. We have a string that we pull from a preference in order to show
+* the configuration settings and the current time when the widget was updated. We also
+* register a BroadcastReceiver for time-changed and timezone-changed broadcasts, and
+* update then too.
+*
+* <p>See also the following files:
+* <ul>
+* <li>ExampleAppWidgetConfigure.java</li>
+* <li>ExampleBroadcastReceiver.java</li>
+* <li>res/layout/appwidget_configure.xml</li>
+* <li>res/layout/appwidget_provider.xml</li>
+* <li>res/xml/appwidget_provider.xml</li>
+* </ul>
+*/
+public class ExampleAppWidgetProvider extends AppWidgetProvider {
+// log tag
+private static final String TAG = "ExampleAppWidgetProvider";
+@Override
+public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+Log.d(TAG, "onUpdate");
+// For each widget that needs an update, get the text that we should display:
+// - Create a RemoteViews object for it
+// - Set the text in the RemoteViews object
+// - Tell the AppWidgetManager to show that views object for the widget.
+final int N = appWidgetIds.length;
+for (int i=0; i<N; i++) {
+int appWidgetId = appWidgetIds[i];
+String titlePrefix = ExampleAppWidgetConfigure.loadTitlePref(context, appWidgetId);
+updateAppWidget(context, appWidgetManager, appWidgetId, titlePrefix);
+}
+}
+@Override
+public void onDeleted(Context context, int[] appWidgetIds) {
+Log.d(TAG, "onDeleted");
+// When the user deletes the widget, delete the preference associated with it.
+final int N = appWidgetIds.length;
+for (int i=0; i<N; i++) {
+ExampleAppWidgetConfigure.deleteTitlePref(context, appWidgetIds[i]);
+}
+}
+@Override
+public void onEnabled(Context context) {
+Log.d(TAG, "onEnabled");
+// When the first widget is created, register for the TIMEZONE_CHANGED and TIME_CHANGED
+// broadcasts. We don't want to be listening for these if nobody has our widget active.
+// This setting is sticky across reboots, but that doesn't matter, because this will
+// be called after boot if there is a widget instance for this provider.
+PackageManager pm = context.getPackageManager();
+pm.setComponentEnabledSetting(
+new ComponentName("com.example.android.apis", ".appwidget.ExampleBroadcastReceiver"),
+PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+PackageManager.DONT_KILL_APP);
+}
+@Override
+public void onDisabled(Context context) {
+// When the first widget is created, stop listening for the TIMEZONE_CHANGED and
+// TIME_CHANGED broadcasts.
+Log.d(TAG, "onDisabled");
+PackageManager pm = context.getPackageManager();
+pm.setComponentEnabledSetting(
+new ComponentName("com.example.android.apis", ".appwidget.ExampleBroadcastReceiver"),
+PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+PackageManager.DONT_KILL_APP);
+}
+static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+int appWidgetId, String titlePrefix) {
+Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId + " titlePrefix=" + titlePrefix);
+// Getting the string this way allows the string to be localized. The format
+// string is filled in using java.util.Formatter-style format strings.
+CharSequence text = context.getString(R.string.appwidget_text_format,
+ExampleAppWidgetConfigure.loadTitlePref(context, appWidgetId),
+"0x" + Long.toHexString(SystemClock.elapsedRealtime()));
+// Construct the RemoteViews object. It takes the package name (in our case, it's our
+// package, but it needs this because on the other side it's the widget host inflating
+// the layout from our package).
+RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_provider);
+views.setTextViewText(R.id.appwidget_text, text);
+// Tell the widget manager
+appWidgetManager.updateAppWidget(appWidgetId, views);
+}
+}
+    如果你需要一个带有Button的App Widget，点击Button去启动一个Activity，下面就是AppWidgetProvider的实现方法：
+public class ExampleAppWidgetProvider extends AppWidgetProvider {
+
+public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+
+final int N = appWidgetIds.length;
+
+// Perform this loop procedure for each App Widget that belongs to this provider
+
+for (int i=0; i<N; i++) {
+
+int appWidgetId = appWidgetIds[i];
+
+// Create an Intent to launch ExampleActivity
+
+Intent intent = new Intent(context, ExampleActivity.class);
+
+PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
+// Get the layout for the App Widget and attach an on-click listener to the button
+
+RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_provider_layout);
+
+views.setOnClickPendingIntent(R.id.button, pendingIntent);
+
+// Tell the AppWidgetManager to perform an update on the current App Widget
+
+appWidgetManager.updateAppWidget(appWidgetId, views);
+
+    }
+
+  }
+
+}
+
+
+3 View layout
+    只要你熟悉用xml怎么去定义layout的话，为App Widget定义一个layout还是很简单的。但是由于App Widget的布局是基于RemoteViews，所以只能使用RemoteViews所支持的layout或者view。
+
+RemoteViews支持的layout和view如下：
+
+Layout – FrameLayout 、LinearLayout、 RelativeLayou
+
+View -- Analog、Clock、 Button、 Chronometer 、ImageButton、 ImageView、 ProgressBar 、TextView
+
+注意：继承这些类的子类同样不支持。
+
+ApiDemo例子，appwidget_provider.xml文件。
+
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2006 The Android Open Source Project
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/appwidget_text"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:textColor="#ff000000"
+/>
+4 App Widget Configuration Activity
+    这个Activity将通过App Widget自动启动，用户可以给App Widget设置有用的参数，比如App Widget的颜色、大小、更新时间或者其他的属性。
+
+    在AndroidManifes.xml中定义这个Activity和一般定义Activity基本没有区别，App Widget host启动这个Activity需要一个Action，所以：
+
+<activity Android:name=".ExampleAppWidgetConfigure">
+
+ <intent-filter>
+
+ <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"    />
+
+</intent-filter>
+
+</activity>
+
+    同样这个Activity必须在AppWidgetProviderInfo  XML文件中定义android:configure。
+
+    值得注意的是App Widget host调用configuration Activity，configuration Activity必须要返回一个结果（必须包含App Widget ID）saved in the Intent extras as EXTRA_APPWIDGET_ID。
+
+ApiDemo例子，ExampleAppWidgetConfigure.java文件：
+
+/*
+ * Copyright (C) 2008 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.example.android.apis.appwidget;
+
+import android.app.Activity;
+import android.appwidget.AppWidgetManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+
+import java.util.ArrayList;
+
+// Need the following import to get access to the app resources, since this
+// class is in a sub-package.
+import com.example.android.apis.R;
+
+/**
+ * The configuration screen for the ExampleAppWidgetProvider widget sample.
+ */
+public class ExampleAppWidgetConfigure extends Activity {
+    static final String TAG = "ExampleAppWidgetConfigure";
+
+    private static final String PREFS_NAME
+            = "com.example.android.apis.appwidget.ExampleAppWidgetProvider";
+    private static final String PREF_PREFIX_KEY = "prefix_";
+
+    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    EditText mAppWidgetPrefix;
+
+    public ExampleAppWidgetConfigure() {
+        super();
+    }
+
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+
+        // Set the result to CANCELED. This will cause the widget host to cancel
+        // out of the widget placement if they press the back button.
+        setResult(RESULT_CANCELED);
+
+        // Set the view layout resource to use.
+        setContentView(R.layout.appwidget_configure);
+
+        // Find the EditText
+        mAppWidgetPrefix = (EditText)findViewById(R.id.appwidget_prefix);
+
+        // Bind the action for the save button.
+        findViewById(R.id.save_button).setOnClickListener(mOnClickListener);
+
+        // Find the widget id from the intent.
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            mAppWidgetId = extras.getInt(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
+
+        // If they gave us an intent without the widget id, just bail.
+        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            finish();
+        }
+
+        mAppWidgetPrefix.setText(loadTitlePref(ExampleAppWidgetConfigure.this, mAppWidgetId));
+    }
+
+    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            final Context context = ExampleAppWidgetConfigure.this;
+
+            // When the button is clicked, save the string in our prefs and return that they
+            // clicked OK.
+            String titlePrefix = mAppWidgetPrefix.getText().toString();
+            saveTitlePref(context, mAppWidgetId, titlePrefix);
+
+            // Push widget update to surface with newly set prefix
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            ExampleAppWidgetProvider.updateAppWidget(context, appWidgetManager,
+                    mAppWidgetId, titlePrefix);
+
+            // Make sure we pass back the original appWidgetId
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            setResult(RESULT_OK, resultValue);
+            finish();
+        }
+    };
+
+    // Write the prefix to the SharedPreferences object for this widget
+    static void saveTitlePref(Context context, int appWidgetId, String text) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + appWidgetId, text);
+        prefs.commit();
+    }
+
+    // Read the prefix from the SharedPreferences object for this widget.
+    // If there is no preference saved, get the default from a resource
+    static String loadTitlePref(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String prefix = prefs.getString(PREF_PREFIX_KEY + appWidgetId, null);
+        if (prefix != null) {
+            return prefix;
+        } else {
+            return context.getString(R.string.appwidget_prefix_default);
+        }
+    }
+
+    static void deleteTitlePref(Context context, int appWidgetId) {
+    }
+
+    static void loadAllTitlePrefs(Context context, ArrayList<Integer> appWidgetIds,
+            ArrayList<String> texts) {
+    }
+}               Context theirContext = mContext.createPackageContext(
+                        mInfo.provider.getPackageName(), Context.CONTEXT_RESTRICTED);
+                mRemoteContext = theirContext;
+                LayoutInflater inflater = (LayoutInflater)
+                        theirContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                inflater = inflater.cloneInContext(theirContext);
+                inflater.setFilter(sInflaterFilter);
+                defaultView = inflater.inflate(mInfo.initialLayout, this, false);
+
+  class Callbacks extends IAppWidgetHost.Stub {
+
+  }
 
 
 
