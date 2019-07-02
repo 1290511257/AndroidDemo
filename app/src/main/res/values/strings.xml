@@ -8,4 +8,7 @@
     <string name="btnstart">开始服务</string>
     <string name="btnstop">停止服务</string>
     <string name="callphone">拨打10086</string>
+    <string name="widget_no_device">暂无设备</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>
