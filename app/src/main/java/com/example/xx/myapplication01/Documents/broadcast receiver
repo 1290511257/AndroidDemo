@@ -55,6 +55,9 @@ if (ACTION_BOOT.equals(intent.getAction()))
 
 ②manifest中进行注册
 
+在安卓8.1+中静态注册已不被允许，应使用动态注册。
+
+
 <receiver android:name=".BootCompleteReceiver">
     <intent-filter>
         <action android:name = "android.intent.cation.BOOT_COMPLETED">

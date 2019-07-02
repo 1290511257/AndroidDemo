@@ -12,9 +12,8 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.example.xx.myapplication01.ListRemoteViewsFactory;
 import com.example.xx.myapplication01.R;
-import com.example.xx.myapplication01.service.ListWidgetService;
+import com.example.xx.myapplication01.utils.Utils;
 
 public class ListWidgetProvider extends AppWidgetProvider {
 
@@ -23,6 +22,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
     public static final String REFRESH_WIDGET = "com.oitsme.REFRESH_WIDGET";
     public static final String COLLECTION_VIEW_ACTION = "com.oitsme.COLLECTION_VIEW_ACTION";
     public static final String COLLECTION_VIEW_EXTRA = "com.oitsme.COLLECTION_VIEW_EXTRA";
+
     private static Handler mHandler=new Handler();
     private Runnable runnable=new Runnable() {
         @Override
@@ -43,6 +43,8 @@ public class ListWidgetProvider extends AppWidgetProvider {
 
             // 设置响应 “按钮(bt_refresh)” 的intent
             Intent btIntent = new Intent().setAction(REFRESH_WIDGET);
+            //在安卓8.1+中不支持广播静态注册，而动态注册需要启动应用程序，因此设定componment指定对指定包名进行广播，应该可以一定程度加快速度，减少消耗
+            btIntent.setComponent(new ComponentName(context,com.example.xx.myapplication01.widget.ListWidgetProvider.class));
             PendingIntent btPendingIntent = PendingIntent.getBroadcast(context, 0, btIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             remoteViews.setOnClickPendingIntent(R.id.tv_refresh, btPendingIntent);
 
@@ -52,6 +54,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
             //    通过setRemoteAdapter将ListView和ListWidgetService关联起来，
             //    以达到通过 ListWidgetService 更新 ListView的目的
             Intent serviceIntent = new Intent(context, ListWidgetService.class);
+            //serviceIntent.setComponent(new ComponentName(context,com.example.xx.myapplication01.widget.ListWidgetProvider.class));
             remoteViews.setRemoteAdapter(R.id.lv_device, serviceIntent);
 
 
@@ -61,7 +64,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
             //        (01) 通过 setPendingIntentTemplate 设置 “intent模板”，这是比不可少的！
             //        (02) 然后在处理该“集合控件”的RemoteViewsFactory类的getViewAt()接口中 通过 setOnClickFillInIntent 设置“集合控件的某一项的数据”
             Intent gridIntent = new Intent();
-
+            gridIntent.setComponent(new ComponentName(context,com.example.xx.myapplication01.widget.ListWidgetProvider.class));
             gridIntent.setAction(COLLECTION_VIEW_ACTION);
             gridIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gridIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -76,6 +79,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.i("==============","ListWidgetProvider onReceive");
         String action = intent.getAction();
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         if (action.equals(COLLECTION_VIEW_ACTION)) {
@@ -100,7 +104,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
             Toast.makeText(context, "刷新...", Toast.LENGTH_SHORT).show();
             final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
             final ComponentName cn = new ComponentName(context,ListWidgetProvider.class);
-            ListRemoteViewsFactory.refresh();
+            //ListRemoteViewsFactory.refresh();
             mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn),R.id.lv_device);
             mHandler.postDelayed(runnable,2000);
             showLoading(context);

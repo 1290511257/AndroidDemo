@@ -1,14 +1,18 @@
-package com.example.xx.myapplication01;
+package com.example.xx.myapplication01.widget;
 
 import android.appwidget.AppWidgetManager;
-import android.bluetooth.BluetoothClass;
+
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.example.xx.myapplication01.widget.ListWidgetProvider;
+import com.example.xx.myapplication01.R;
 
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory{
@@ -16,7 +20,7 @@ public class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFac
     private Context mContext;
     private int mAppWidgetId;
 
-    private static List<BluetoothClass.Device> mDevices;
+    private static List<Device> mDevices;
 
     /**
      * 构造GridRemoteViewsFactory
@@ -35,7 +39,7 @@ public class ListRemoteViewsFactory implements RemoteViewsService.RemoteViewsFac
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.item_widget_device);
 
         // 设置 第position位的“视图”的数据
-        BluetoothClass.Device device = mDevices.get(position);
+        Device device = mDevices.get(position);
         //  rv.setImageViewResource(R.id.iv_lock, ((Integer) map.get(IMAGE_ITEM)).intValue());
         rv.setTextViewText(R.id.tv_name, device.getName());
 

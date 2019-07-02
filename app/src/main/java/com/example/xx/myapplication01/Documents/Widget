@@ -63,12 +63,12 @@ widgetCategory 指定了 widget 能显示的地方：能否显示在 home Screen
 
 2.2 AppWidget Framework的大致流程
 1. 编写一个widget（先不考虑后台服务以及用户管理界面等）
-    实际是写一个事件监听类即一个BroadcastReceiver子类，当然框架已经提供了一个辅助类AppWidgetProvider，实现的类只要实现其方法即可，其中必须实现的方法是onUpdate ，其实就是一个定时事件，widget监听此事件
-    另外就是规划好视图（layout），将此widget打包安装。
+    实际是写一个事件监听类即一个BroadcastReceiver子类，当然框架已经提供了一个辅助类AppWidgetProvider，实现的类只要实现其方法即可，其中必须实现的方法是onUpdate ，
+    其实就是一个定时事件，widget监听此事件，另外就是规划好视图（layout），将此widget打包安装。
 2. 当android系统启动时，AppWidgetService 就将负责检查所有的安装包，将检查
-    AndroidManifest.xml（不要告诉我不知道，如果不知道可要看看基本开发知识了）
+    AndroidManifest.xml
     文件中有<metadata android:name="android.appwidget.provider" android:resource="@xml/appwidget_info" />
-    信息的程序包记录下来
+    信息的程序包记录下来，用以添加小部件
 3. 从用户菜单将已经安装的widget添加到桌面，也就是将widget在桌面上显示出来，这个应该是由AppWidgetService和AppWidgetManager完成的，其中AppWidgetManager 将负责将视图发送到桌面显示出来，并将此widget记录到系统文件中
 4. AppWidgetService将根据widget配置中的updatePeriodMillis属性来定时发送ACTION_APPWIDGET_UPDATE事件，此事件将激活widget的事件监听方法onUpdate，此方法将通过AppWidgetManager完成widget内容的更新和其他操作。
 3 AppWidgetHost
