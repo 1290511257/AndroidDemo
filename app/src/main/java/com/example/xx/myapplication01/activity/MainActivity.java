@@ -42,14 +42,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void bindViews() {
 
-        editdetail = (EditText) findViewById(R.id.editdetail);
-        editname = (EditText) findViewById(R.id.editname);
-        btnclean = (Button) findViewById(R.id.btnclean);
-        btnsave = (Button) findViewById(R.id.btnsave);
-        btnread = (Button) findViewById(R.id.btnread);
-        btncall = (Button) findViewById(R.id.btncall);
-        btntelmonitor = (Button) findViewById(R.id.btntelmonitor);
-        btntelmonitorclose = (Button) findViewById(R.id.btntelmonitorclose);
+        editdetail = findViewById(R.id.editdetail);
+        editname = findViewById(R.id.editname);
+        btnclean = findViewById(R.id.btnclean);
+        btnsave = findViewById(R.id.btnsave);
+        btnread = findViewById(R.id.btnread);
+        btncall = findViewById(R.id.btncall);
+        btntelmonitor = findViewById(R.id.btntelmonitor);
+        btntelmonitorclose = findViewById(R.id.btntelmonitorclose);
 
         btnclean.setOnClickListener(this);
         btnsave.setOnClickListener(this);
@@ -120,8 +120,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    public void targetServiceStart(){
+    public void seekbarBtnOnClick(View view) {
 
+        final Intent intent = new Intent(MainActivity.this,seekbar.class);
 
+        startActivity(intent);
     }
 }

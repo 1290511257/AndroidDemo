@@ -24,6 +24,7 @@ public class ListWidgetProvider extends AppWidgetProvider {
     public static final String COLLECTION_VIEW_EXTRA = "com.oitsme.COLLECTION_VIEW_EXTRA";
 
     private static Handler mHandler=new Handler();
+
     private Runnable runnable=new Runnable() {
         @Override
         public void run() {

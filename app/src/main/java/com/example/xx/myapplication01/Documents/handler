@@ -1,0 +1,1 @@
+因为安卓中能操控activity的只有ui线程，因此一些后台线程无法直接向activity传递信息，需要借助handler实现
