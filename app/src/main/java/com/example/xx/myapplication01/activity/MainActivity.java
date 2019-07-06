@@ -122,8 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void seekbarBtnOnClick(View view) {
 
-        final Intent intent = new Intent(MainActivity.this,seekbar.class);
+//        final Intent intent = new Intent(MainActivity.this,seekbar.class);
 
-        startActivity(intent);
+//        startActivity(intent);
     }
 }
